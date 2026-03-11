@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { supabase } from "./supabaseClient";
 
 function SupabaseForm() {
   const {
@@ -9,8 +10,14 @@ function SupabaseForm() {
   } = useForm();
 
   const onSubmit = async (data) => {
-    console.log("Form data:", data);
-    // TODO: send to Supabase here
+    const { error } = await supabase
+      .from("projects") // your table name
+      .insert([data]);
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return;
+    }
 
     reset();
   };
@@ -23,10 +30,7 @@ function SupabaseForm() {
           type="text"
           {...register("projectName", {
             required: "Project name is required",
-            minLength: {
-              value: 5,
-              message: "Project name must be at least 5 characters"
-            }
+            minLength: { value: 5, message: "Min 5 characters" }
           })}
         />
         {errors.projectName && <p>{errors.projectName.message}</p>}
@@ -40,7 +44,7 @@ function SupabaseForm() {
             required: "Email is required",
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: "Enter a valid email"
+              message: "Invalid email"
             }
           })}
         />
@@ -51,7 +55,7 @@ function SupabaseForm() {
         <label>Priority Level</label>
         <select
           {...register("priorityLevel", {
-            required: "Priority level is required"
+            required: "Priority is required"
           })}
         >
           <option value="">Select priority</option>
@@ -77,12 +81,10 @@ function SupabaseForm() {
         <label>Version Number</label>
         <input
           type="number"
-          step="0.1"
           {...register("versionNumber", {
-            required: "Version number is required",
+            required: "Version number required",
             valueAsNumber: true,
-            validate: (value) =>
-              value > 0 || "Version number must be greater than 0"
+            validate: (v) => v > 0 || "Must be greater than 0"
           })}
         />
         {errors.versionNumber && <p>{errors.versionNumber.message}</p>}
@@ -100,10 +102,10 @@ function SupabaseForm() {
         <input
           type="url"
           {...register("repositoryUrl", {
-            required: "Repository URL is required",
+            required: "URL required",
             pattern: {
               value: /^(https?:\/\/[^\s]+)$/i,
-              message: "Enter a valid URL starting with http or https"
+              message: "Invalid URL"
             }
           })}
         />
@@ -115,7 +117,7 @@ function SupabaseForm() {
         <input
           type="text"
           {...register("teamLead", {
-            required: "Team lead is required"
+            required: "Team lead required"
           })}
         />
         {errors.teamLead && <p>{errors.teamLead.message}</p>}
@@ -126,10 +128,7 @@ function SupabaseForm() {
         <input
           type="password"
           {...register("budgetCode", {
-            maxLength: {
-              value: 8,
-              message: "Budget code must be at most 8 characters"
-            }
+            maxLength: { value: 8, message: "Max 8 characters" }
           })}
         />
         {errors.budgetCode && <p>{errors.budgetCode.message}</p>}
@@ -139,10 +138,7 @@ function SupabaseForm() {
         <label>Description</label>
         <textarea
           {...register("description", {
-            maxLength: {
-              value: 200,
-              message: "Description must be at most 200 characters"
-            }
+            maxLength: { value: 200, message: "Max 200 characters" }
           })}
         />
         {errors.description && <p>{errors.description.message}</p>}
